@@ -11,14 +11,14 @@ import java.util.LinkedList;
 public class CentriVaccinali implements Serializable {
 
     private static final String CSV_SEPARATOR = ";";
-    String nome = "";
-    String via = "";
-    short tipologia = 0;
-    String nomeCognome = "";
-    String codiceFiscale = "";
-    String dataSomministrazione = null;
-    short vaccinoSomministrato = 0;
-    int idVaccinazione = 0;
+    public String nome = "";
+    public String via = "";
+    public short tipologia = 0;
+    public String nomeCognome = "";
+    public String codiceFiscale = "";
+    public String dataSomministrazione = null;
+    public short vaccinoSomministrato = 0;
+    public int idVaccinazione = 0;
 
     public CentriVaccinali(String nomeCentro, String viaCentro, short tipologia) {
         this.nome = nomeCentro;
@@ -123,7 +123,7 @@ public class CentriVaccinali implements Serializable {
         return false;
     }
 
-    private static boolean writeVaccinato(LinkedList<CentriVaccinali> vaccinati,LinkedList<Cittadini> cittadini, String filepath) {
+    public static boolean writeVaccinato(LinkedList<CentriVaccinali> vaccinati, LinkedList<Cittadini> cittadini, String filepath) {
         final int arraySize = vaccinati.size();
         CentriVaccinali[] arrayVaccinati = new CentriVaccinali[arraySize];
         int i = 0;
@@ -154,8 +154,6 @@ public class CentriVaccinali implements Serializable {
                                 vaccinato.vaccinoSomministrato +
                                 CSV_SEPARATOR +
                                 vaccinato.idVaccinazione +
-                                CSV_SEPARATOR+
-                                "."+
                                 CSV_SEPARATOR;
                 bw.write(oneLine);
                 bw.newLine();
@@ -170,9 +168,7 @@ public class CentriVaccinali implements Serializable {
                                 eventoAvverso.severita +
                                 CSV_SEPARATOR +
                                 eventoAvverso.note +
-                                CSV_SEPARATOR +
-                                "."+
-                                CSV_SEPARATOR;
+                                CSV_SEPARATOR ;
                 bw.write(oneLine);
                 bw.newLine();
 
@@ -289,7 +285,7 @@ public class CentriVaccinali implements Serializable {
     }
 
     public static void main(String[] args) {
-        registraVaccinato("Pippo", "Gianpaolo Torino", "TRNGPL99C03D912N","03/03/2021",(short) 0, 5);
+        registraVaccinato("Pippo", "Gianpaolo Torino", "TRNGPL99C03D912N","03/03/2021",(short) 0, 3);
     }
 
 

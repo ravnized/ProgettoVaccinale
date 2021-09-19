@@ -20,8 +20,8 @@ public class Cittadini {
         this.type = type;
 
     }
-    public static LinkedList leggiEventi(String filepath) {
-        LinkedList eventiAvversi = new LinkedList<>();
+    public static LinkedList<Cittadini> leggiEventi(String filepath) {
+        LinkedList<Cittadini> eventiAvversi = new LinkedList<>();
         File file = new File(filepath);
         if (!file.exists()) return eventiAvversi;
         try {
@@ -49,7 +49,7 @@ public class Cittadini {
         return null;
     }
 
-    private static boolean cercaCentroVaccinaleFromNome(String nomeCentro){
+    private static CentriVaccinali cercaCentroVaccinaleFromNome(String nomeCentro){
         String filepath = "data/CentriVaccinali.dati";
         LinkedList<CentriVaccinali> centriVaccinaliList = new LinkedList<>();
         CentriVaccinali centro = null;
@@ -75,7 +75,7 @@ public class Cittadini {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return centro!=null;
+        return centro;
 
     }
 
@@ -109,22 +109,64 @@ public class Cittadini {
 
     }
 
-
-
-
-
     private static boolean inserisciEventiAvversi(String nomeCentro,int evento, int severita, String note){
         String filepath = "data/Vaccinati_" + nomeCentro + ".dati";
-        Cittadini eventoAvverso = new Cittadini("Evento",evento,severita, note);
-        LinkedList vaccinazioniList = CentriVaccinali.leggeVaccinati(filepath);
-        if (vaccinazioniList != null) {
-            vaccinazioniList.addLast(eventoAvverso);
+        Cittadini eventoAvverso = new Cittadini("Evento",evento,severita-1, note);
+        LinkedList<CentriVaccinali> vaccinazioniList = CentriVaccinali.leggeVaccinati(filepath);
+        LinkedList<Cittadini> cittadinilist = Cittadini.leggiEventi(filepath);
+        if (cittadinilist != null){
+            cittadinilist.addLast(eventoAvverso);
         }
-        //writeVaccinato(vaccinazioniList, filepath);
+        if (vaccinazioniList != null) {
+            CentriVaccinali.writeVaccinato(vaccinazioniList, cittadinilist ,filepath);
+        }
+
         return true;
 
     }
-    public static void main(String[] args){
 
+    private static boolean visualizzaInfoCentroVaccinale(String nomeCentro){
+        CentriVaccinali centro = cercaCentroVaccinaleFromNome(nomeCentro);
+        System.out.println("Centro Nome: "+centro.nome);
+        System.out.println("Centro Via: "+centro.via);
+        switch (centro.tipologia){
+            case 0 -> System.out.println("Centro Tipologia: Ospedaliero");
+            case 1 -> System.out.println("Centro Tipologia: Aziendale");
+            case 2 -> System.out.println("Centro Tipologia: Hub");
+        }
+        return true;
+    }
+
+    public static void riassuntoEventiAvversi (String nomeCentro){
+        String filepath = "data/Vaccinati_" + nomeCentro + ".dati";
+        LinkedList<Cittadini> eventiList = leggiEventi(filepath);
+        int[] mediaPonderataEvento = new int[6];
+        int[] mediaPonderataSeverita = new int[5];
+        int mediaEvento = 0, mediaSeverita = 0;
+        for (Cittadini evento: eventiList){
+            mediaPonderataEvento [evento.evento] += 1;
+            mediaPonderataSeverita [evento.severita] +=1;
+        }
+
+        for (int i=0; i< mediaPonderataEvento.length; i++ ){
+            if(mediaEvento < mediaPonderataEvento[i]){
+                mediaEvento = i;
+            }
+        }
+        for (int i=0; i< mediaPonderataSeverita.length; i++ ){
+            if(mediaSeverita < mediaPonderataSeverita[i]){
+                mediaSeverita = i;
+            }
+        }
+
+
+        System.out.println("Media Evento: "+mediaEvento);
+        System.out.println("Media Severita: "+mediaSeverita);
+
+
+    }
+
+    public static void main(String[] args){
+        riassuntoEventiAvversi("Pippo");
     }
 }
