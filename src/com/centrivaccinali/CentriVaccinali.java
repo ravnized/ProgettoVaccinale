@@ -36,9 +36,6 @@ public class CentriVaccinali implements Serializable {
     }
 
 
-
-
-
     private static void merge(CentriVaccinali[] arr, int l, int m, int r) {
 
         int n1 = m - l + 1;
@@ -133,9 +130,7 @@ public class CentriVaccinali implements Serializable {
         }
 
 
-
         sort(arrayVaccinati, 0, arraySize - 1);
-
 
 
         try {
@@ -143,9 +138,9 @@ public class CentriVaccinali implements Serializable {
 
             for (CentriVaccinali vaccinato : arrayVaccinati) {
                 String oneLine =
-                        "Vaccinato"+
-                                CSV_SEPARATOR+
-                        vaccinato.nomeCognome +
+                        "Vaccinato" +
+                                CSV_SEPARATOR +
+                                vaccinato.nomeCognome +
                                 CSV_SEPARATOR +
                                 vaccinato.codiceFiscale +
                                 CSV_SEPARATOR +
@@ -161,21 +156,19 @@ public class CentriVaccinali implements Serializable {
             }
             for (Cittadini eventoAvverso : cittadini) {
                 String oneLine =
-                        eventoAvverso.type+
-                                CSV_SEPARATOR+
+                        eventoAvverso.type +
+                                CSV_SEPARATOR +
                                 eventoAvverso.evento +
                                 CSV_SEPARATOR +
                                 eventoAvverso.severita +
                                 CSV_SEPARATOR +
                                 eventoAvverso.note +
-                                CSV_SEPARATOR ;
+                                CSV_SEPARATOR;
                 bw.write(oneLine);
                 bw.newLine();
 
             }
             bw.flush();
-
-
 
 
             bw.close();
@@ -197,18 +190,16 @@ public class CentriVaccinali implements Serializable {
             String[] campiTotali = null;
 
 
-
-            while(true){
-                    int i =0;
-                    String readerLiner = reader.readLine();
-                    if (readerLiner == null) break;
-                    campiTotali = readerLiner.split(";");
-                    if(campiTotali[i].equals("Vaccinato")){
-                        CentriVaccinali lastVaccinato = new CentriVaccinali( campiTotali[i+1], campiTotali[i +2], campiTotali[i + 3], Short.parseShort(campiTotali[i + 4]), Integer.parseInt(campiTotali[i + 5]));
-                        vaccinatiList.addLast(lastVaccinato);
-                    }
+            while (true) {
+                int i = 0;
+                String readerLiner = reader.readLine();
+                if (readerLiner == null) break;
+                campiTotali = readerLiner.split(";");
+                if (campiTotali[i].equals("Vaccinato")) {
+                    CentriVaccinali lastVaccinato = new CentriVaccinali(campiTotali[i + 1], campiTotali[i + 2], campiTotali[i + 3], Short.parseShort(campiTotali[i + 4]), Integer.parseInt(campiTotali[i + 5]));
+                    vaccinatiList.addLast(lastVaccinato);
                 }
-
+            }
 
 
             return vaccinatiList;
@@ -218,9 +209,6 @@ public class CentriVaccinali implements Serializable {
         }
         return null;
     }
-
-
-
 
 
     private static LinkedList<CentriVaccinali> leggeCentroVaccinale() {
@@ -281,12 +269,10 @@ public class CentriVaccinali implements Serializable {
             vaccinazioniList.addLast(vaccinazione);
         }
         LinkedList<Cittadini> cittadinilist = Cittadini.leggiEventi(filepath);
-        writeVaccinato(vaccinazioniList, cittadinilist ,filepath);
+        writeVaccinato(vaccinazioniList, cittadinilist, filepath);
     }
 
     public static void main(String[] args) {
-        registraVaccinato("Pippo", "Gianpaolo Torino", "TRNGPL99C03D912N","03/03/2021",(short) 0, 3);
+        registraVaccinato("Pippo", "Gianpaolo Torino", "TRNGPL99C03D912N", "03/03/2021", (short) 0, 3);
     }
-
-
 }
