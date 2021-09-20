@@ -10,24 +10,37 @@ import java.util.LinkedList;
 
 public class CentriVaccinali implements Serializable {
 
+    public enum Tipologia {
+        OSPEDALIERO,
+        AZIENDALE,
+        HUB
+    }
+
+    public enum TipoVaccino {
+        PFIZER,
+        ASTRAZENECA,
+        MODERNA,
+        JJ
+    }
+
+
     private static final String CSV_SEPARATOR = ";";
     public String nome = "";
     public String via = "";
-    public short tipologia = 0;
+    public Tipologia tipologia;
     public String nomeCognome = "";
     public String codiceFiscale = "";
     public String dataSomministrazione = null;
-    public short vaccinoSomministrato = 0;
+    public TipoVaccino vaccinoSomministrato;
     public int idVaccinazione = 0;
 
-    public CentriVaccinali(String nomeCentro, String viaCentro, short tipologia) {
+    public CentriVaccinali(String nomeCentro, String viaCentro, Tipologia tipologia) {
         this.nome = nomeCentro;
         this.via = viaCentro;
         this.tipologia = tipologia;
     }
 
-    public CentriVaccinali(String nomeCognome, String codiceFiscale, String dataSomministrazione, short vaccinoSomministrato, int idVaccinazione) {
-
+    public CentriVaccinali(String nomeCognome, String codiceFiscale, String dataSomministrazione, TipoVaccino vaccinoSomministrato, int idVaccinazione) {
         this.nomeCognome = nomeCognome;
         this.codiceFiscale = codiceFiscale;
         this.dataSomministrazione = dataSomministrazione;
@@ -196,7 +209,7 @@ public class CentriVaccinali implements Serializable {
                 if (readerLiner == null) break;
                 campiTotali = readerLiner.split(";");
                 if (campiTotali[i].equals("Vaccinato")) {
-                    CentriVaccinali lastVaccinato = new CentriVaccinali(campiTotali[i + 1], campiTotali[i + 2], campiTotali[i + 3], Short.parseShort(campiTotali[i + 4]), Integer.parseInt(campiTotali[i + 5]));
+                    CentriVaccinali lastVaccinato = new CentriVaccinali(campiTotali[i + 1], campiTotali[i + 2], campiTotali[i + 3], TipoVaccino.valueOf(campiTotali[i + 4]), Integer.parseInt(campiTotali[i + 5]));
                     vaccinatiList.addLast(lastVaccinato);
                 }
             }
@@ -211,7 +224,7 @@ public class CentriVaccinali implements Serializable {
     }
 
 
-    private static LinkedList<CentriVaccinali> leggeCentroVaccinale() {
+    public static LinkedList<CentriVaccinali> leggeCentroVaccinale() {
         String filepath = "data/CentriVaccinali.dati";
         LinkedList<CentriVaccinali> centriVaccinaliList = new LinkedList<>();
         try {
@@ -219,11 +232,10 @@ public class CentriVaccinali implements Serializable {
             String[] campiTotali = null;
             while (true) {
                 String readerLiner = reader.readLine();
-                if (readerLiner == null) break;
+                if (readerLiner == null || readerLiner.equals("")) break;
                 campiTotali = readerLiner.split(";");
-
                 for (int i = 0; i < campiTotali.length; i += 3) {
-                    CentriVaccinali centro = new CentriVaccinali(campiTotali[i], campiTotali[i + 1], Short.parseShort(campiTotali[i + 2]));
+                    CentriVaccinali centro = new CentriVaccinali(campiTotali[i], campiTotali[i + 1], Tipologia.valueOf(campiTotali[i + 2]));
                     centriVaccinaliList.addLast(centro);
                 }
             }
@@ -239,20 +251,17 @@ public class CentriVaccinali implements Serializable {
     private static void centroVaccinaleFileVisualizer() {
         LinkedList<CentriVaccinali> centroVaccinali = leggeCentroVaccinale();
         for (CentriVaccinali centroVac : centroVaccinali) {
+            System.out.println("\n");
             System.out.println("Centro nome: " + centroVac.nome);
             System.out.println("Centro via: " + centroVac.via);
-            switch (centroVac.tipologia) {
-                case 0 -> System.out.println("Centro Tipologia: Ospedaliero");
-                case 1 -> System.out.println("Centro Tipologia: Aziendale");
-                case 2 -> System.out.println("Centro Tipologia: Hub");
-            }
+            System.out.println("Tipologia: "+centroVac.tipologia);
             System.out.println("\n");
         }
 
     }
 
-    private static void registraCentroVaccinale(String nomeCentro, String viaCentro, short tipologia) {
-        CentriVaccinali centroVac = new CentriVaccinali(nomeCentro, viaCentro, tipologia);
+    private static void registraCentroVaccinale(String nomeCentro, String viaCentro, String tipologia) {
+        CentriVaccinali centroVac = new CentriVaccinali(nomeCentro, viaCentro, Tipologia.valueOf(tipologia));
         String filepath = "data/CentriVaccinali.dati";
         LinkedList<CentriVaccinali> centriPrecedenti = leggeCentroVaccinale();
         if (centriPrecedenti != null) {
@@ -261,8 +270,8 @@ public class CentriVaccinali implements Serializable {
         writeCentriVaccinali(centriPrecedenti, filepath);
     }
 
-    private static void registraVaccinato(String nomeCentro, String nomeCognome, String codiceFiscale, String dataSomministrazione, short vaccinoSomministrato, int id) {
-        CentriVaccinali vaccinazione = new CentriVaccinali(nomeCognome, codiceFiscale, dataSomministrazione, vaccinoSomministrato, id);
+    private static void registraVaccinato(String nomeCentro, String nomeCognome, String codiceFiscale, String dataSomministrazione, String vaccinoSomministrato, int id) {
+        CentriVaccinali vaccinazione = new CentriVaccinali(nomeCognome, codiceFiscale, dataSomministrazione, TipoVaccino.valueOf(vaccinoSomministrato), id);
         String filepath = "data/Vaccinati_" + nomeCentro + ".dati";
         LinkedList<CentriVaccinali> vaccinazioniList = leggeVaccinati(filepath);
         if (vaccinazioniList != null) {
@@ -273,6 +282,8 @@ public class CentriVaccinali implements Serializable {
     }
 
     public static void main(String[] args) {
-        registraVaccinato("Pippo", "Gianpaolo Torino", "TRNGPL99C03D912N", "03/03/2021", (short) 0, 3);
+        //registraVaccinato("Pippo", "Gianpaolo Torino", "TRNGPL99C03D912N", "03/03/2021", "JJ", 3);
+        //registraCentroVaccinale("Ospedale Giuseppe Casati","Via Luigi Settembrini, 1, 20017 Rho MI","OSPEDALIERO");
+        centroVaccinaleFileVisualizer();
     }
 }
