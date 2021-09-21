@@ -10,20 +10,6 @@ import java.util.LinkedList;
 
 public class CentriVaccinali implements Serializable {
 
-    public enum Tipologia {
-        OSPEDALIERO,
-        AZIENDALE,
-        HUB
-    }
-
-    public enum TipoVaccino {
-        PFIZER,
-        ASTRAZENECA,
-        MODERNA,
-        JJ
-    }
-
-
     private static final String CSV_SEPARATOR = ";";
     public String nome = "";
     public String via = "";
@@ -33,13 +19,11 @@ public class CentriVaccinali implements Serializable {
     public String dataSomministrazione = null;
     public TipoVaccino vaccinoSomministrato;
     public int idVaccinazione = 0;
-
     public CentriVaccinali(String nomeCentro, String viaCentro, Tipologia tipologia) {
         this.nome = nomeCentro;
         this.via = viaCentro;
         this.tipologia = tipologia;
     }
-
     public CentriVaccinali(String nomeCognome, String codiceFiscale, String dataSomministrazione, TipoVaccino vaccinoSomministrato, int idVaccinazione) {
         this.nomeCognome = nomeCognome;
         this.codiceFiscale = codiceFiscale;
@@ -47,7 +31,6 @@ public class CentriVaccinali implements Serializable {
         this.vaccinoSomministrato = vaccinoSomministrato;
         this.idVaccinazione = idVaccinazione;
     }
-
 
     private static void merge(CentriVaccinali[] arr, int l, int m, int r) {
 
@@ -92,7 +75,6 @@ public class CentriVaccinali implements Serializable {
             k++;
         }
     }
-
 
     private static void sort(CentriVaccinali[] arr, int l, int r) {
         if (l < r) {
@@ -223,7 +205,6 @@ public class CentriVaccinali implements Serializable {
         return null;
     }
 
-
     public static LinkedList<CentriVaccinali> leggeCentroVaccinale() {
         String filepath = "data/CentriVaccinali.dati";
         LinkedList<CentriVaccinali> centriVaccinaliList = new LinkedList<>();
@@ -254,7 +235,7 @@ public class CentriVaccinali implements Serializable {
             System.out.println("\n");
             System.out.println("Centro nome: " + centroVac.nome);
             System.out.println("Centro via: " + centroVac.via);
-            System.out.println("Tipologia: "+centroVac.tipologia);
+            System.out.println("Tipologia: " + centroVac.tipologia);
             System.out.println("\n");
         }
 
@@ -284,6 +265,19 @@ public class CentriVaccinali implements Serializable {
     public static void main(String[] args) {
         //registraVaccinato("Pippo", "Gianpaolo Torino", "TRNGPL99C03D912N", "03/03/2021", "JJ", 3);
         //registraCentroVaccinale("Ospedale Giuseppe Casati","Via Luigi Settembrini, 1, 20017 Rho MI","OSPEDALIERO");
-        centroVaccinaleFileVisualizer();
+        //centroVaccinaleFileVisualizer();
+    }
+
+    public enum Tipologia {
+        OSPEDALIERO,
+        AZIENDALE,
+        HUB
+    }
+
+    public enum TipoVaccino {
+        PFIZER,
+        ASTRAZENECA,
+        MODERNA,
+        JJ
     }
 }
