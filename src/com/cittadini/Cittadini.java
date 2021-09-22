@@ -8,6 +8,8 @@ import java.util.LinkedList;
 
 public class Cittadini {
     private static final String CSV_SEPARATOR = ";";
+    private static final String filepathCittadiniRegistrati = "data/Cittadini_Registrati.dati";
+    private static final String filepathCentriVaccinali = "data/CentriVaccinali.dati";
     public Evento evento;
     public int severita = 0;
     public String note = "";
@@ -30,29 +32,82 @@ public class Cittadini {
         this.idVaccinazione = idVaccinazione;
     }
 
-    public static LinkedList<Cittadini> leggiRegistrati() {
-        String filepath = "data/Cittadini_Registrati.dati";
-        LinkedList<Cittadini> registrati = new LinkedList<>();
 
+
+    public static LinkedList<Cittadini> readEventiAndRegistrati(String filepath, boolean eventoCheck){
+        LinkedList<Cittadini> list = new LinkedList<>();
         File file = new File(filepath);
-        if (!file.exists()) return registrati;
+        if (!file.exists()) return list;
         try {
             BufferedReader reader = new BufferedReader(new FileReader(filepath));
-            String[] campiTotali = null;
+            String[] campiTotali;
 
             while (true) {
                 int i = 0;
                 String readerLiner = reader.readLine();
                 if (readerLiner == null || readerLiner.equals("")) break;
                 campiTotali = readerLiner.split(";");
-                Cittadini registrato = new Cittadini(campiTotali[i], campiTotali[i + 1], campiTotali[i + 2], campiTotali[i + 3], campiTotali[i + 4], Integer.parseInt(campiTotali[i + 5]));
-                registrati.addLast(registrato);
+                if (eventoCheck) {
+                    if (campiTotali[i].equals("Evento")) {
+                        Cittadini eventoAvverso = new Cittadini(campiTotali[i], Evento.valueOf(campiTotali[i + 1]), Integer.parseInt(campiTotali[i + 2]), campiTotali[i + 3]);
+                        list.addLast(eventoAvverso);
+                    }
+                }else {
+                    Cittadini registrato = new Cittadini(campiTotali[i], campiTotali[i + 1], campiTotali[i + 2], campiTotali[i + 3], campiTotali[i + 4], Integer.parseInt(campiTotali[i + 5]));
+                    list.addLast(registrato);
+                }
+
             }
-            return registrati;
+
+
+            return list;
+
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
+
+    }
+
+    public static CentriVaccinali cercaCentroVaccinale(String nomeCentro, String via, String tipologia){
+        CentriVaccinali centro = null;
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(filepathCentriVaccinali));
+            String[] campiTotali;
+
+            while (true) {
+                String readerLiner = reader.readLine();
+                if (readerLiner == null || readerLiner.equals("")) break;
+                campiTotali = readerLiner.split(";");
+                for (int i = 0; i < campiTotali.length; i += 3) {
+                    if (via == null || tipologia == null){
+                        if (campiTotali[i].equals(nomeCentro)) {
+                            centro = new CentriVaccinali(campiTotali[i], campiTotali[i + 1], CentriVaccinali.Tipologia.valueOf(campiTotali[i + 2]));
+                        }
+                    }else if (nomeCentro == null){
+                        if (campiTotali[i + 1].equals(via) && campiTotali [i+2].equals(tipologia)) {
+                            centro = new CentriVaccinali(campiTotali[i], campiTotali[i + 1], CentriVaccinali.Tipologia.valueOf(campiTotali[i + 2]));
+                        }
+                    }
+
+
+
+                }
+
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return centro;
+
+    }
+
+    public static void printCentro(CentriVaccinali centro){
+        System.out.println(centro.nome);
+        System.out.println(centro.via);
+        System.out.println(CentriVaccinali.tipologiaVisualizer(centro.tipologia.ordinal()));
     }
 
     public static boolean writeCittadiniRegistrati(LinkedList<Cittadini> cittadiniRegistrati) {
@@ -89,125 +144,36 @@ public class Cittadini {
 
     private static boolean registraCittadino(String nomeCognome, String codiceFiscale, String email, String userid, String password, int idVaccinazione) {
         Cittadini cittadinoRegistrato = new Cittadini(nomeCognome, codiceFiscale, email, userid, password, idVaccinazione);
-        LinkedList<Cittadini> cittadinilist = Cittadini.leggiRegistrati();
+        LinkedList<Cittadini> cittadinilist = readEventiAndRegistrati(filepathCittadiniRegistrati, false);
         if (cittadinilist != null) {
             cittadinilist.addLast(cittadinoRegistrato);
             writeCittadiniRegistrati(cittadinilist);
         } else {
             System.out.println("Errore File Cittadini");
         }
-
-
         return true;
-
     }
 
-    public static LinkedList<Cittadini> leggiEventi(String filepath) {
-        LinkedList<Cittadini> eventiAvversi = new LinkedList<>();
-        File file = new File(filepath);
-        if (!file.exists()) return eventiAvversi;
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(filepath));
-            String[] campiTotali = null;
-
-            while (true) {
-                int i = 0;
-                String readerLiner = reader.readLine();
-                if (readerLiner == null || readerLiner.equals("")) break;
-                campiTotali = readerLiner.split(";");
-                if (campiTotali[i].equals("Evento")) {
-                    Cittadini eventoAvverso = new Cittadini(campiTotali[i], Evento.valueOf(campiTotali[i + 1]), Integer.parseInt(campiTotali[i + 2]), campiTotali[i + 3]);
-                    eventiAvversi.addLast(eventoAvverso);
-                }
-            }
-
-
-            return eventiAvversi;
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private static CentriVaccinali cercaCentroVaccinaleFromNome(String nomeCentro) {
-        String filepath = "data/CentriVaccinali.dati";
-        LinkedList<CentriVaccinali> centriVaccinaliList = new LinkedList<>();
-        CentriVaccinali centro = null;
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(filepath));
-            String[] campiTotali;
-
-            while (true) {
-                String readerLiner = reader.readLine();
-                if (readerLiner == null || readerLiner.equals("")) break;
-                campiTotali = readerLiner.split(";");
-                for (int i = 0; i < campiTotali.length; i += 3) {
-                    if (campiTotali[i].equals(nomeCentro)) {
-                        centro = new CentriVaccinali(campiTotali[i], campiTotali[i + 1], CentriVaccinali.Tipologia.valueOf(campiTotali[i + 2]));
-                        centriVaccinaliList.addLast(centro);
-                    }
-
-                }
-
-            }
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return centro;
-
-    }
-
-    private static boolean cercaCentroVaccinaleFromViaTipologia(String via, String tipologia) {
-        String filepath = "data/CentriVaccinali.dati";
-        LinkedList<CentriVaccinali> centriVaccinaliList = new LinkedList<>();
-        CentriVaccinali centro = null;
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(filepath));
-            String[] campiTotali;
-
-            while (true) {
-                String readerLiner = reader.readLine();
-                if (readerLiner == null || readerLiner.equals("")) break;
-                campiTotali = readerLiner.split(";");
-                for (int i = 0; i < campiTotali.length; i += 3) {
-                    if (campiTotali[i + 1].equals(via) && CentriVaccinali.Tipologia.valueOf(campiTotali[i + 2]).equals(tipologia)) {
-                        centro = new CentriVaccinali(campiTotali[i], campiTotali[i + 1], CentriVaccinali.Tipologia.valueOf(campiTotali[i + 2]));
-                        centriVaccinaliList.addLast(centro);
-                    }
-
-                }
-
-            }
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return centro != null;
-
-    }
 
     private static boolean inserisciEventiAvversi(String nomeCentro, String evento, int severita, String note) {
         String filepath = "data/Vaccinati_" + nomeCentro + ".dati";
         Cittadini eventoAvverso = new Cittadini("Evento", Evento.valueOf(evento), severita - 1, note);
-        LinkedList<CentriVaccinali> vaccinazioniList = CentriVaccinali.leggeVaccinati(filepath);
-        LinkedList<Cittadini> cittadinilist = Cittadini.leggiEventi(filepath);
+        LinkedList<CentriVaccinali> vaccinazioniList = CentriVaccinali.readCentroAndVaccinati(filepath,false);
+        LinkedList<Cittadini> cittadinilist = readEventiAndRegistrati(filepath,true);
         if (cittadinilist != null) {
             cittadinilist.addLast(eventoAvverso);
         }
         if (vaccinazioniList != null) {
             CentriVaccinali.writeVaccinato(vaccinazioniList, cittadinilist, filepath);
+            return true;
         }
+        return false;
 
-        return true;
 
     }
 
     public static void visualizzaInfoCentroVaccinale(String nomeCentro) {
-        CentriVaccinali centro = cercaCentroVaccinaleFromNome(nomeCentro);
+        CentriVaccinali centro = cercaCentroVaccinale(nomeCentro, null , null);
         System.out.println("Centro nome: " + centro.nome);
         System.out.println("Centro via: " + centro.via);
         System.out.println("Centro tipo: " + centro.tipologia);
@@ -216,13 +182,15 @@ public class Cittadini {
 
     public static void riassuntoEventiAvversi(String nomeCentro) {
         String filepath = "data/Vaccinati_" + nomeCentro + ".dati";
-        LinkedList<Cittadini> eventiList = leggiEventi(filepath);
+        LinkedList<Cittadini> eventiList = readEventiAndRegistrati(filepath, true);
         int[] mediaPonderataEvento = new int[6];
         int[] mediaPonderataSeverita = new int[5];
         int mediaEventoQt = 0, mediaEventoPos = 0, mediaSeveritaQt = 0, mediaSeveritaPos = 0;
-        for (Cittadini evento : eventiList) {
-            mediaPonderataEvento[evento.evento.ordinal()] += 1;
-            mediaPonderataSeverita[evento.severita] += 1;
+        if (eventiList != null) {
+            for (Cittadini evento : eventiList) {
+                mediaPonderataEvento[evento.evento.ordinal()] += 1;
+                mediaPonderataSeverita[evento.severita] += 1;
+            }
         }
 
         for (int i = 0; i < mediaPonderataEvento.length; i++) {
@@ -244,29 +212,23 @@ public class Cittadini {
     }
 
     public static String eventoTipoVisualizer(int posizione) {
-        switch (posizione) {
-            case 0:
-                return "Mal di Testa";
-            case 1:
-                return "Febbre";
-            case 2:
-                return "Dolori muscolari e articolari";
-            case 3:
-                return "Linfoadenopatia";
-            case 4:
-                return "Tachicardia";
-            case 5:
-                return "Crisi ipertensiva";
-        }
-        return "";
+        return switch (posizione) {
+            case 0 -> "Mal di Testa";
+            case 1 -> "Febbre";
+            case 2 -> "Dolori muscolari e articolari";
+            case 3 -> "Linfoadenopatia";
+            case 4 -> "Tachicardia";
+            case 5 -> "Crisi ipertensiva";
+            default -> "";
+        };
     }
 
     public static void main(String[] args) {
 
         //inserisciEventiAvversi("Pippo", "FEBBRE", 3, "SBURRA");
         //riassuntoEventiAvversi("Pippo");
-        //cercaCentroVaccinaleFromViaTipologia("Via Luigi Settembrini, 1, 20017 Rho MI","OSPEDALIERO");
-        //cercaCentroVaccinaleFromNome("POT di Bollate");
+        printCentro(cercaCentroVaccinale(null, "Via Luigi Settembrini, 1, 20017 Rho MI","OSPEDALIERO"));
+        //cercaCentroVaccinale("POT di Bollate", null, null);
         //visualizzaInfoCentroVaccinale("Parco Trenno");
         //registraCittadino("Gianpaolo Torino","NessunaVerifica","gtorino@studenti.uninsubria.it","ravnized", "aaaaaaa", 1);
     }

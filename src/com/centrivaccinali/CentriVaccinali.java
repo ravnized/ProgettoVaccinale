@@ -4,13 +4,13 @@ import com.cittadini.Cittadini;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 
 
 public class CentriVaccinali implements Serializable {
 
     private static final String CSV_SEPARATOR = ";";
+    private static final String filepathCentriVaccinali = "data/CentriVaccinali.dati";
     public String nome = "";
     public String via = "";
     public Tipologia tipologia;
@@ -19,11 +19,13 @@ public class CentriVaccinali implements Serializable {
     public String dataSomministrazione = null;
     public TipoVaccino vaccinoSomministrato;
     public int idVaccinazione = 0;
+
     public CentriVaccinali(String nomeCentro, String viaCentro, Tipologia tipologia) {
         this.nome = nomeCentro;
         this.via = viaCentro;
         this.tipologia = tipologia;
     }
+
     public CentriVaccinali(String nomeCognome, String codiceFiscale, String dataSomministrazione, TipoVaccino vaccinoSomministrato, int idVaccinazione) {
         this.nomeCognome = nomeCognome;
         this.codiceFiscale = codiceFiscale;
@@ -90,9 +92,9 @@ public class CentriVaccinali implements Serializable {
         }
     }
 
-    private static boolean writeCentriVaccinali(LinkedList<CentriVaccinali> centriVaccinali, String filepath) {
+    private static boolean writeCentriVaccinali(LinkedList<CentriVaccinali> centriVaccinali) {
         try {
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filepath), StandardCharsets.UTF_8));
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filepathCentriVaccinali), StandardCharsets.UTF_8));
 
             for (CentriVaccinali centriVaccinale : centriVaccinali) {
                 String oneLine = centriVaccinale.nome +
@@ -175,29 +177,34 @@ public class CentriVaccinali implements Serializable {
         return false;
     }
 
-    public static LinkedList leggeVaccinati(String filepath) {
-        SimpleDateFormat format = new SimpleDateFormat("dd/MMMMM/yyyy hh:mm");
-        LinkedList vaccinatiList = new LinkedList<>();
+
+    public static LinkedList<CentriVaccinali> readCentroAndVaccinati(String filepath, boolean centroSelect) {
+        LinkedList<CentriVaccinali> list = new LinkedList<>();
         File file = new File(filepath);
-        if (!file.exists()) return vaccinatiList;
+        if (!file.exists()) return list;
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(filepath));
-            String[] campiTotali = null;
-
-
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            String[] campiTotali;
             while (true) {
                 int i = 0;
                 String readerLiner = reader.readLine();
                 if (readerLiner == null) break;
                 campiTotali = readerLiner.split(";");
-                if (campiTotali[i].equals("Vaccinato")) {
-                    CentriVaccinali lastVaccinato = new CentriVaccinali(campiTotali[i + 1], campiTotali[i + 2], campiTotali[i + 3], TipoVaccino.valueOf(campiTotali[i + 4]), Integer.parseInt(campiTotali[i + 5]));
-                    vaccinatiList.addLast(lastVaccinato);
+                if (centroSelect) {
+                    for (int j = 0; j < campiTotali.length; j += 3) {
+                        CentriVaccinali centro = new CentriVaccinali(campiTotali[j], campiTotali[j + 1], Tipologia.valueOf(campiTotali[j + 2]));
+                        list.addLast(centro);
+                    }
+                } else {
+                    if (campiTotali[i].equals("Vaccinato")) {
+                        CentriVaccinali lastVaccinato = new CentriVaccinali(campiTotali[i + 1], campiTotali[i + 2], campiTotali[i + 3], TipoVaccino.valueOf(campiTotali[i + 4]), Integer.parseInt(campiTotali[i + 5]));
+                        list.addLast(lastVaccinato);
+                    }
                 }
+
+
             }
-
-
-            return vaccinatiList;
+            return list;
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -205,61 +212,57 @@ public class CentriVaccinali implements Serializable {
         return null;
     }
 
-    public static LinkedList<CentriVaccinali> leggeCentroVaccinale() {
-        String filepath = "data/CentriVaccinali.dati";
-        LinkedList<CentriVaccinali> centriVaccinaliList = new LinkedList<>();
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(filepath));
-            String[] campiTotali = null;
-            while (true) {
-                String readerLiner = reader.readLine();
-                if (readerLiner == null || readerLiner.equals("")) break;
-                campiTotali = readerLiner.split(";");
-                for (int i = 0; i < campiTotali.length; i += 3) {
-                    CentriVaccinali centro = new CentriVaccinali(campiTotali[i], campiTotali[i + 1], Tipologia.valueOf(campiTotali[i + 2]));
-                    centriVaccinaliList.addLast(centro);
-                }
+
+    private static boolean centroVaccinaleFileVisualizer() {
+        LinkedList<CentriVaccinali> centroVaccinali = readCentroAndVaccinati(filepathCentriVaccinali, true);
+        if (centroVaccinali != null) {
+            for (CentriVaccinali centroVac : centroVaccinali) {
+                System.out.println("\n");
+                System.out.println("Centro nome: " + centroVac.nome);
+                System.out.println("Centro via: " + centroVac.via);
+                System.out.println("Tipologia: " + centroVac.tipologia);
+                System.out.println("\n");
             }
-
-            return centriVaccinaliList;
-
-        } catch (IOException e) {
-            e.printStackTrace();
+            return true;
         }
-        return null;
+        return false;
     }
 
-    private static void centroVaccinaleFileVisualizer() {
-        LinkedList<CentriVaccinali> centroVaccinali = leggeCentroVaccinale();
-        for (CentriVaccinali centroVac : centroVaccinali) {
-            System.out.println("\n");
-            System.out.println("Centro nome: " + centroVac.nome);
-            System.out.println("Centro via: " + centroVac.via);
-            System.out.println("Tipologia: " + centroVac.tipologia);
-            System.out.println("\n");
-        }
-
-    }
-
-    private static void registraCentroVaccinale(String nomeCentro, String viaCentro, String tipologia) {
+    private static boolean registraCentroVaccinale(String nomeCentro, String viaCentro, String tipologia) {
         CentriVaccinali centroVac = new CentriVaccinali(nomeCentro, viaCentro, Tipologia.valueOf(tipologia));
-        String filepath = "data/CentriVaccinali.dati";
-        LinkedList<CentriVaccinali> centriPrecedenti = leggeCentroVaccinale();
+        LinkedList<CentriVaccinali> centriPrecedenti = readCentroAndVaccinati(filepathCentriVaccinali, true);
         if (centriPrecedenti != null) {
             centriPrecedenti.addLast(centroVac);
         }
-        writeCentriVaccinali(centriPrecedenti, filepath);
+        if (centriPrecedenti != null) {
+            writeCentriVaccinali(centriPrecedenti);
+            return true;
+        }
+        return false;
+
     }
 
-    private static void registraVaccinato(String nomeCentro, String nomeCognome, String codiceFiscale, String dataSomministrazione, String vaccinoSomministrato, int id) {
+    private static boolean registraVaccinato(String nomeCentro, String nomeCognome, String codiceFiscale, String dataSomministrazione, String vaccinoSomministrato, int id) {
         CentriVaccinali vaccinazione = new CentriVaccinali(nomeCognome, codiceFiscale, dataSomministrazione, TipoVaccino.valueOf(vaccinoSomministrato), id);
         String filepath = "data/Vaccinati_" + nomeCentro + ".dati";
-        LinkedList<CentriVaccinali> vaccinazioniList = leggeVaccinati(filepath);
+        LinkedList<CentriVaccinali> vaccinazioniList = readCentroAndVaccinati(filepath, false);
         if (vaccinazioniList != null) {
             vaccinazioniList.addLast(vaccinazione);
         }
-        LinkedList<Cittadini> cittadinilist = Cittadini.leggiEventi(filepath);
-        writeVaccinato(vaccinazioniList, cittadinilist, filepath);
+        LinkedList<Cittadini> cittadinilist = Cittadini.readEventiAndRegistrati(filepath, true);
+        if (vaccinazioniList != null) {
+            writeVaccinato(vaccinazioniList, cittadinilist, filepath);
+            return true;
+        }
+        return false;
+    }
+    public static String tipologiaVisualizer(int posizione) {
+        return switch (posizione) {
+            case 0 -> "OSPEDALIERO";
+            case 1 -> "AZIENDALE";
+            case 2 -> "HUB";
+            default -> "";
+        };
     }
 
     public static void main(String[] args) {
