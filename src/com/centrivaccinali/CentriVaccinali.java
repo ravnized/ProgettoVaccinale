@@ -89,6 +89,7 @@ public class CentriVaccinali implements Serializable {
 
 
             merge(arr, l, m, r);
+            
         }
     }
 
@@ -178,7 +179,7 @@ public class CentriVaccinali implements Serializable {
     }
 
 
-    public static LinkedList<CentriVaccinali> readCentroAndVaccinati(String filepath, boolean centroSelect) {
+    public static LinkedList<CentriVaccinali> readCentroAndVaccinati(String filepath, boolean... centroSelect) {
         LinkedList<CentriVaccinali> list = new LinkedList<>();
         File file = new File(filepath);
         if (!file.exists()) return list;
@@ -190,7 +191,7 @@ public class CentriVaccinali implements Serializable {
                 String readerLiner = reader.readLine();
                 if (readerLiner == null) break;
                 campiTotali = readerLiner.split(";");
-                if (centroSelect) {
+                if (centroSelect[0]) {
                     for (int j = 0; j < campiTotali.length; j += 3) {
                         CentriVaccinali centro = new CentriVaccinali(campiTotali[j], campiTotali[j + 1], Tipologia.valueOf(campiTotali[j + 2]));
                         list.addLast(centro);
@@ -204,6 +205,7 @@ public class CentriVaccinali implements Serializable {
 
 
             }
+            reader.close();
             return list;
 
         } catch (IOException e) {
@@ -245,7 +247,7 @@ public class CentriVaccinali implements Serializable {
     private static boolean registraVaccinato(String nomeCentro, String nomeCognome, String codiceFiscale, String dataSomministrazione, String vaccinoSomministrato, int id) {
         CentriVaccinali vaccinazione = new CentriVaccinali(nomeCognome, codiceFiscale, dataSomministrazione, TipoVaccino.valueOf(vaccinoSomministrato), id);
         String filepath = "data/Vaccinati_" + nomeCentro + ".dati";
-        LinkedList<CentriVaccinali> vaccinazioniList = readCentroAndVaccinati(filepath, false);
+        LinkedList<CentriVaccinali> vaccinazioniList = readCentroAndVaccinati(filepath);
         if (vaccinazioniList != null) {
             vaccinazioniList.addLast(vaccinazione);
         }

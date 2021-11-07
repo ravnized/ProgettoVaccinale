@@ -34,7 +34,7 @@ public class Cittadini {
 
 
 
-    public static LinkedList<Cittadini> readEventiAndRegistrati(String filepath, boolean eventoCheck){
+    public static LinkedList<Cittadini> readEventiAndRegistrati(String filepath, boolean... eventoCheck){
         LinkedList<Cittadini> list = new LinkedList<>();
         File file = new File(filepath);
         if (!file.exists()) return list;
@@ -47,7 +47,7 @@ public class Cittadini {
                 String readerLiner = reader.readLine();
                 if (readerLiner == null || readerLiner.equals("")) break;
                 campiTotali = readerLiner.split(";");
-                if (eventoCheck) {
+                if (eventoCheck[0]) {
                     if (campiTotali[i].equals("Evento")) {
                         Cittadini eventoAvverso = new Cittadini(campiTotali[i], Evento.valueOf(campiTotali[i + 1]), Integer.parseInt(campiTotali[i + 2]), campiTotali[i + 3]);
                         list.addLast(eventoAvverso);
@@ -58,7 +58,7 @@ public class Cittadini {
                 }
 
             }
-
+            reader.close();
 
             return list;
 
@@ -95,7 +95,7 @@ public class Cittadini {
                 }
 
             }
-
+            reader.close();
 
         } catch (IOException e) {
             e.printStackTrace();
